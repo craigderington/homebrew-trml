@@ -1,0 +1,28 @@
+name: brew test-bot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-bot:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Style and audit formulae
+        run: |
+          shopt -s nullglob
+          formulae=(Formula/*.rb)
+          if [ ${#formulae[@]} -eq 0 ]; then
+            echo "No formulae yet — skipping."
+            exit 0
+          fi
+          brew style "${formulae[@]}"
+          for f in "${formulae[@]}"; do
+            brew audit --strict "$f"
+          done
